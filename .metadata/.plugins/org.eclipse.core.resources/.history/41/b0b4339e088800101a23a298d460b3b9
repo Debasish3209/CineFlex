@@ -1,0 +1,70 @@
+package com.debasish.impl;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import com.debasish.dto.FeedBackDto;
+import com.debasish.exception.FeedBackNotFoundException;
+import com.debasish.model.FeedBack;
+import com.debasish.repo.FeedBackRepo;
+import com.debasish.service.FeedBackService;
+import com.debasish.utility.ResponseStructure;
+
+public class FeedBackServiceImpl implements FeedBackService {
+
+	private FeedBackRepo feedBackRepo;
+	private ResponseStructure<FeedBack> responseStructure;
+	private ResponseStructure<List<FeedBack>> rs;
+	
+	private FeedBackServiceImpl(FeedBackRepo feedBackRepo,ResponseStructure<FeedBack> responseStructure, ResponseStructure<List<FeedBack>> rs ) {
+		this.feedBackRepo=feedBackRepo;
+		this.responseStructure=responseStructure;
+		this.rs=rs;
+	}
+	
+	@Override
+	public ResponseEntity<ResponseStructure<FeedBack>> createFeedBack(FeedBackDto feedBackDto) {
+		return ResponseEntity.ok(responseStructure.setStatuscode(HttpStatus.OK.value())
+				.setMessage("Feedback created successfully")
+				.setData(feedBackRepo.save(mapToFeedBack(feedBackDto))));
+	}
+
+	private Object mapToFeedBack(FeedBackDto feedBackDto) {
+		String randomFeedBackId = UUID.randomUUID().toString(); 
+		return FeedBack.builder()
+				.fRating(feedBackDto.getFRating())
+				.custId(feedBackDto.getCustId())
+				.movieId(feedBackDto.getMovieId())
+				.fComment(feedBackDto.getFComment())
+				.fTimeStamp(feedBackDto.getFTimeStamp())
+				.fId(randomFeedBackId).build();
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<FeedBack>>> getAllFeedBack() {
+		return ResponseEntity.ok(rs.setStatuscode(HttpStatus.OK.value())
+				.setMessage("feedback data fetched successfully")
+				.setData(feedBackRepo.findAll()));
+				
+		
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<FeedBack>>> getFeedBackByCustId(String custId) {
+		return feedBackRepo.findByCustId(custId).map(feedBack->ResponseEntity.ok(
+				rs.setStatuscode(HttpStatus.OK.value())
+				.setMessage("feedback by customer has been found successfully!!")
+				.setData(feedBack)))
+				.orElseThrow(()->new FeedBackNotFoundException("sorry its not found"));
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<FeedBack>>> getFeedBackByMovieId(String movieId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,41 @@
+package com.debasish.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.debasish.dto.FeedBackDto;
+import com.debasish.model.FeedBack;
+import com.debasish.service.FeedBackService;
+import com.debasish.utility.ResponseStructure;
+
+import lombok.AllArgsConstructor;
+
+@RestController
+@RequestMapping("/feedBack")
+@AllArgsConstructor
+public class FeedBackController {
+
+
+	private FeedBackService feedBackService;
+	
+	@PostMapping
+	public ResponseEntity<ResponseStructure<FeedBack>>createFeedBack(@RequestBody FeedBackDto feedBackDto){
+		return feedBackService.createFeedBack(feedBackDto);
+		
+	}
+	@GetMapping
+	public ResponseEntity<ResponseStructure<List<FeedBack>>>getAllFeedBack(){
+		return feedBackService.getAllFeedBack();
+	}
+	@GetMapping("/customer/{custId}")
+	public ResponseEntity<ResponseStructure<List<FeedBack>>>getFeedBackByCustId(@PathVariable("custId")String custId){
+		return feedBackService.getFeedBackByCustId(custId);
+	}
+}

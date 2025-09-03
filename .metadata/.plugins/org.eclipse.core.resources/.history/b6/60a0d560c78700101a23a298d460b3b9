@@ -1,0 +1,5 @@
+package com.debasish.dto;
+
+public class MovieDto {
+
+}

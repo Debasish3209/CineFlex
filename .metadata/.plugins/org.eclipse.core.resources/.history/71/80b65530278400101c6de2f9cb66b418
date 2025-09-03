@@ -1,0 +1,102 @@
+package com.debasish.serviceImpl;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.debasish.dto.CustomerDto;
+import com.debasish.exception.CustomerNotFoundByIdException;
+import com.debasish.model.Customer;
+import com.debasish.repository.CustomerRepo;
+import com.debasish.service.CustomerService;
+import com.debasish.util.ResponseStructure;
+
+@Service
+public class CustomerServiceImpl implements CustomerService {
+
+    private final ResponseStructure responseStructure;
+
+    private final CustomerRepo customerRepo;
+
+    // Constructor Injection
+    public CustomerServiceImpl(CustomerRepo customerRepo, ResponseStructure responseStructure) {
+        this.customerRepo = customerRepo;
+        this.responseStructure = responseStructure;
+    }
+
+    @Override
+    public ResponseEntity<ResponseStructure<Customer>> saveCustomer(CustomerDto customerDto) {
+        // Example implementation
+        Customer customer = new Customer();
+        customer.setCustName(customerDto.getCustName());
+        customer.setCustEmail(customerDto.getCustEmail());
+        customer.setCustPh(customerDto.getCustPh());
+
+        Customer savedCustomer = customerRepo.save(customer);
+
+        ResponseStructure<Customer> response = new ResponseStructure<>();
+        response.setStatuscode(201);
+        response.setMessage("Customer saved successfully");
+        response.setData(savedCustomer);
+
+        return ResponseEntity.status(201).body(response);
+    }
+
+    @Override
+    public ResponseEntity<ResponseStructure<Customer>> findByCustomerId(String custId) {
+        // Example implementation (you’ll need to handle Optional properly)
+        Customer customer = customerRepo.findById(custId).orElse(null);
+
+        ResponseStructure<Customer> response = new ResponseStructure<>();
+        if (customer != null) {
+            response.setStatuscode(200);
+            response.setMessage("Customer found");
+            response.setData(customer);
+            return ResponseEntity.ok(response);
+        } else {
+            response.setStatuscode(404);
+            response.setMessage("Customer not found");
+            response.setData(null);
+            return ResponseEntity.status(404).body(response);
+        }
+    }
+
+    @Override
+    public ResponseEntity<ResponseStructure<Customer>> updateByCustomerId(String custId, CustomerDto customerDto) {
+        Customer updateCustomer = mapToCustomer(customerDto); // ✅ use mapToCustomer, not saveCustomer
+
+        return customerRepo.findById(custId).map(exCust -> {
+            updateCustomer.setCustId(exCust.getCustId());
+            Customer savedCustomer = customerRepo.save(updateCustomer);
+
+            ResponseStructure<Customer> response = new ResponseStructure<>();
+            response.setStatuscode(HttpStatus.OK.value());
+            response.setMessage("Customer data updated successfully");
+            response.setData(savedCustomer);
+
+            return ResponseEntity.ok(response);
+        }).orElseThrow(() -> new CustomerNotFoundByIdException("Customer not found"));
+    }
+
+
+    @Override
+    public ResponseEntity<ResponseStructure<Customer>> deleteByCustomerId(String custId) {
+        // TODO: implement delete logic
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ResponseStructure<List<Customer>>> findAllCustomers() {
+        List<Customer> customers = customerRepo.findAll();
+
+        ResponseStructure<List<Customer>> response = new ResponseStructure<>();
+        response.setStatuscode(200);
+        response.setMessage("All customers fetched successfully");
+        response.setData(customers);
+
+        return ResponseEntity.ok(response);
+    }
+}

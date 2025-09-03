@@ -1,0 +1,5 @@
+package com.debasish.exceptions;
+
+public class MovieNotFoundByIdException {
+
+}
